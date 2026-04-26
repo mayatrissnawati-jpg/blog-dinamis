@@ -14,6 +14,11 @@ mysqli_stmt_bind_param($stmtUser, "i", $id_user);
 mysqli_stmt_execute($stmtUser);
 $user = mysqli_fetch_assoc(mysqli_stmt_get_result($stmtUser));
 
+// ================= CEK FOLDER PROFIL (AUTO FIX)
+$profilPath = file_exists("profile/index.php") 
+    ? "profile/index.php" 
+    : "profil/index.php";
+
 // ================= FUNCTION =================
 function countData($koneksi, $query, $types = "", ...$params) {
     $stmt = mysqli_prepare($koneksi, $query);
@@ -47,7 +52,7 @@ $komentar = countData($koneksi,
     "i", $id_user
 );
 
-// cek tabel likes
+// cek likes
 $pakaiLike = mysqli_num_rows(mysqli_query($koneksi, "SHOW TABLES LIKE 'likes'")) > 0;
 
 $like = $pakaiLike
@@ -60,7 +65,7 @@ $like = $pakaiLike
     )
     : 0;
 
-// ================= LIST ARTIKEL =================
+// ================= LIST =================
 $query = "
 SELECT a.*,
 COUNT(DISTINCT k.id_komentar) AS total_komentar,
@@ -97,161 +102,129 @@ $listArtikel = mysqli_stmt_get_result($stmt);
 <title>Dashboard Author</title>
 
 <style>
-body {
-    margin: 0;
-    font-family: 'Segoe UI';
-    background: #f5f6fa;
-}
+body { margin:0; font-family:'Segoe UI'; background:#f5f6fa; }
 
 /* NAVBAR */
 .navbar {
-    height: 60px;
-    background: linear-gradient(135deg,#7B68EE,#9370DB);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    color: white;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
+    height:60px;
+    background:linear-gradient(135deg,#7B68EE,#9370DB);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0 20px;
+    color:white;
+    position:fixed;
+    top:0; left:0; right:0;
+    z-index:1000;
 }
 
-.nav-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
+.nav-left { display:flex; align-items:center; gap:10px; }
+.menu-btn { font-size:22px; cursor:pointer; }
 
-.menu-btn {
-    font-size: 22px;
-    cursor: pointer;
-}
-
-/* RIGHT */
-.nav-right {
-    display: flex;
-    align-items: center;
-}
+.nav-right { display:flex; align-items:center; }
 
 /* PROFILE */
 .profile-menu {
-    position: relative;
-    cursor: pointer;
-    padding: 6px 12px;
-    border-radius: 8px;
-    background: rgba(255,255,255,0.2);
+    position:relative;
+    cursor:pointer;
+    padding:6px 12px;
+    border-radius:8px;
+    background:rgba(255,255,255,0.2);
 }
 
 .profile-menu:hover {
-    background: rgba(255,255,255,0.3);
+    background:rgba(255,255,255,0.3);
 }
 
 /* DROPDOWN */
 .dropdown {
-    display: none;
-    position: absolute;
-    right: 0;
-    top: 45px;
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    min-width: 150px;
-    overflow: hidden;
+    display:none;
+    position:absolute;
+    right:0;
+    top:45px;
+    background:white;
+    border-radius:10px;
+    box-shadow:0 8px 20px rgba(0,0,0,0.15);
+    min-width:150px;
 }
 
 .dropdown a {
-    display: block;
-    padding: 10px;
-    text-decoration: none;
-    color: #333;
+    display:block;
+    padding:10px;
+    color:#333;
+    text-decoration:none;
 }
 
-.dropdown a:hover {
-    background: #f5f5ff;
-}
-
-.dropdown.show {
-    display: block;
-}
+.dropdown a:hover { background:#f5f5ff; }
+.dropdown.show { display:block; }
 
 /* SIDEBAR */
 .sidebar {
-    width: 220px;
-    height: 100vh;
-    background: white;
-    position: fixed;
-    top: 60px;
-    left: 0;
-    transition: 0.3s;
+    width:220px;
+    height:100vh;
+    background:white;
+    position:fixed;
+    top:60px;
+    left:0;
+    transition:0.3s;
 }
 
-.sidebar.hide {
-    left: -220px;
-}
+.sidebar.hide { left:-220px; }
 
 .sidebar a {
-    display: block;
-    padding: 12px 20px;
-    text-decoration: none;
-    color: #555;
+    display:block;
+    padding:12px 20px;
+    color:#555;
+    text-decoration:none;
 }
 
-.sidebar a:hover {
-    background: #f0f0ff;
-}
+.sidebar a:hover { background:#f0f0ff; }
 
 /* MAIN */
 .main {
-    margin-left: 220px;
-    margin-top: 70px;
-    padding: 20px;
-    transition: 0.3s;
+    margin-left:220px;
+    margin-top:70px;
+    padding:20px;
+    transition:0.3s;
 }
 
-.main.full {
-    margin-left: 0;
-}
+.main.full { margin-left:0; }
 
 /* CARDS */
 .cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
-    gap: 15px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    gap:15px;
 }
 
 .card {
-    background: white;
-    padding: 20px;
-    border-radius: 15px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    background:white;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.08);
 }
 
 /* ARTIKEL */
 .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(250px,1fr));
-    gap: 20px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+    gap:20px;
 }
 
 .artikel {
-    background: white;
-    border-radius: 15px;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    background:white;
+    border-radius:15px;
+    overflow:hidden;
+    box-shadow:0 5px 15px rgba(0,0,0,0.08);
 }
 
 .artikel img {
-    width: 100%;
-    height: 170px;
-    object-fit: cover;
+    width:100%;
+    height:170px;
+    object-fit:cover;
 }
 
-.artikel-content {
-    padding: 15px;
-}
+.artikel-content { padding:15px; }
 </style>
 </head>
 
@@ -269,7 +242,7 @@ body {
             👤 <?= htmlspecialchars($user['nama'] ?? 'Author') ?>
 
             <div class="dropdown" id="dropdownMenu">
-                <a href="profil/index.php">Profil</a>
+                <a href="../profile/index.php">Profil</a>
                 <a href="../auth/logout.php">Logout</a>
             </div>
         </div>
@@ -320,7 +293,6 @@ body {
 
 </div>
 
-<!-- JS -->
 <script>
 function toggleSidebar(){
     document.querySelector(".sidebar").classList.toggle("hide");

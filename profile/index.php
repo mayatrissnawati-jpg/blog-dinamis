@@ -1,4 +1,5 @@
 <?php
+session_start();
 include "../config/auth.php";
 include "../config/koneksi.php";
 
@@ -9,13 +10,22 @@ if (!isset($_SESSION['id_user'])) {
 
 $id = $_SESSION['id_user'];
 
-$stmt = mysqli_prepare($koneksi, "
-    SELECT * FROM users WHERE id_user = ?
-");
+// ambil data user
+$stmt = mysqli_prepare($koneksi, "SELECT * FROM users WHERE id_user = ?");
 mysqli_stmt_bind_param($stmt, "i", $id);
 mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$user = mysqli_fetch_assoc($result);
+$user = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+
+// tentukan tombol kembali berdasarkan role
+$role = $_SESSION['role'] ?? '';
+
+if ($role == 'admin') {
+    $back = '/blog/admin/dashboard.php';
+} elseif ($role == 'author') {
+    $back = '/blog/author/dashboard.php';
+} else {
+    $back = '/blog/index.php';
+}
 ?>
 
 <!DOCTYPE html>
@@ -140,7 +150,7 @@ $foto = (!empty($user['foto']) && file_exists($path . $user['foto']))
 
 <center>
 <a href="edit.php" class="btn edit">Edit Profil</a>
-<a href="../index.php" class="btn back">Kembali</a>
+<a href="<?= $back ?>" class="btn back">Kembali</a>
 </center>
 
 </div>
