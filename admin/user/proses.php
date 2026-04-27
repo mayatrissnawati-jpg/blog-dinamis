@@ -21,11 +21,11 @@ if (isset($_GET['hapus'])) {
     }
 
     // cek user ada atau tidak
-    $cek = mysqli_query($koneksi, "SELECT * FROM user WHERE id_user='$id'");
+    $cek = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user='$id'");
 
     if (mysqli_num_rows($cek) > 0) {
 
-        mysqli_query($koneksi, "DELETE FROM user WHERE id_user='$id'");
+        mysqli_query($koneksi, "DELETE FROM users WHERE id_user='$id'");
 
         echo "
         <script>
