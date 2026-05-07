@@ -42,7 +42,6 @@ JavaScript	Interaksi halaman website
 4. Struktur Folder Project
 
 Contoh struktur folder aplikasi:
-
 Blog-Dinamis/
 │
 ├── admin/
